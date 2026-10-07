@@ -1,22 +1,36 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { TodosService } from './todos.service';
+import { Todo } from './todo.interface';
 
 @Controller('todos')
-export class TodosController {
+public class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
-  @Get()
-  getAll() {
-    return this.todosService.getAll();
+  @Post()
+  create(@Body('title') title: string): Todo {
+    return this.todosService.create(title);
   }
 
-  @Post()
-  create(@Body() todo: any) {
-    return this.todosService.create(todo);
+  @Get()
+  findAll(): Todo[] {
+    return this.todosService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number): Todo {
+    return this.todosService.findOne(id);
+  }
+
+  @Put(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateData: Partial<Todo>,
+  ): Todo {
+    return this.todosService.update(id, updateData);
   }
 
   @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.todosService.delete(id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.todosService.remove(id);
   }
 }
