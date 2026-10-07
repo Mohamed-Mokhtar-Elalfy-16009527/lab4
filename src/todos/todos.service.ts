@@ -1,30 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Todo } from './todo.interface';
 
 @Injectable()
-export class TodosService {
-  private todos = [];
-  private id = 1;
+public class TodosService {
+  private todos: Todo[] = [];
+  private idCounter = 1;
 
-  getAll() {
-    return this.todos;
-  }
-
-  create(todo: any) {
-    const newTodo = {
-      id: this.id++,
-      title: todo.title || 'Untitled',
-      done: todo.done || false,
+  create(title: string): Todo {
+    const newTodo: Todo = {
+      id: this.idCounter++,
+      title,
+      done: false,
     };
     this.todos.push(newTodo);
     return newTodo;
   }
 
-  delete(id: number) {
-    const index = this.todos.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      this.todos.splice(index, 1);
-      return { message: 'Todo deleted' };
+  findAll(): Todo[] {
+    return this.todos;
+  }
+
+  findOne(id: number): Todo {
+    const todo = this.todos.find(t => t.id === id);
+    if (!todo) {
+      throw new NotFoundException(`Todo with ID ${id} not found`);
     }
-    return { message: 'Todo not found' };
+    return todo;
+  }
+
+  update(id: number, updateData: Partial<Todo>): Todo {
+    const todo = this.findOne(id);
+    if (updateData.title !== undefined) todo.title = updateData.title;
+    if (updateData.done !== undefined) todo.done = updateData.done;
+    return todo;
+  }
+
+  remove(id: number): { message: string } {
+    const index = this.todos.findIndex(t => t.id === id);
+    if (index === -1) {
+      throw new NotFoundException(`Todo with ID ${id} not found`);
+    }
+    this.todos.splice(index, 1);
+    return { message: `Todo with ID ${id} deleted successfully` };
   }
 }
